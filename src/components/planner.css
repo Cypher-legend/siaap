@@ -1,0 +1,512 @@
+/* planner.css */
+.planner-container {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: white;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.calendar-header h2 {
+  color: #CC7722;
+  margin: 0;
+  font-size: 24px;
+  text-align: center;
+  flex-grow: 1;
+}
+
+.calendar-header button {
+  background-color: #CC7722;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.calendar-header button:hover {
+  background-color: #B36B1E;
+}
+
+.calendar {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 2px;
+  background-color: white;
+  border-radius: 8px;
+}
+
+.calendar thead {
+  background-color: #CC7722;
+}
+
+.calendar th {
+  padding: 15px;
+  text-align: center;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.calendar td {
+  padding: 0;
+  text-align: left;
+  vertical-align: top;
+  height: 100px;
+  border: 1px solid #eee;
+  background-color: white;
+}
+
+.day {
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.day:hover {
+  background-color: #FFF3E0;
+}
+
+.day-number {
+  display: block;
+  padding: 8px;
+  font-weight: bold;
+  color: #333;
+}
+
+.empty {
+  background-color: #f9f9f9;
+}
+
+.has-tasks {
+  background-color: #FFF3E0;
+}
+
+.task-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #CC7722;
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  display: block;
+}
+
+/* Category-specific colors */
+.task-indicator.ast { background-color: #4CAF50; }
+.task-indicator.pst { background-color: #2196F3; }
+.task-indicator.referral { background-color: #9C27B0; }
+.task-indicator.report-writing { background-color: #FF9800; }
+.task-indicator.access { background-color: #00BCD4; }
+.task-indicator.stakeholder-meeting { background-color: #795548; }
+
+/* Category Summaries */
+.category-summaries {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.category-summaries h3 {
+  color: #CC7722;
+  margin-bottom: 20px;
+  font-size: 20px;
+  text-align: center;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 0 10px;
+}
+
+.category-box {
+  background-color: white;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.category-box h4 {
+  color: #CC7722;
+  margin: 0 0 15px 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.category-tasks {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.category-task-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f5f5;
+  font-size: 14px;
+}
+
+.task-date {
+  min-width: 24px;
+  height: 24px;
+  background-color: #CC7722;
+  color: white;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+  font-size: 12px;
+}
+
+.task-text {
+  flex: 1;
+}
+
+.task-target {
+  color: #666;
+  margin-left: 8px;
+  font-size: 12px;
+}
+
+.no-tasks {
+  color: #666;
+  font-style: italic;
+  text-align: center;
+  padding: 10px;
+}
+
+
+/* Add these styles to your planner.css file */
+
+/* Monthly Summary Styles */
+.monthly-summary {
+  background-color: white;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.monthly-summary h3 {
+  color: #CC7722;
+  margin-top: 0;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.summary-card {
+  background-color: #f9f9f9;
+  border-radius: 6px;
+  padding: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.summary-card h4 {
+  color: #CC7722;
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 16px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
+}
+
+.summary-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.stat-label {
+  color: #666;
+}
+
+.stat-value {
+  font-weight: bold;
+  color: #333;
+}
+
+.stat-value.positive {
+  color: #4CAF50;
+}
+
+.stat-value.negative {
+  color: #F44336;
+}
+
+/* Task Metrics Styles */
+.task-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 5px;
+  font-size: 12px;
+}
+
+.task-target, .task-achieved, .task-balance {
+  background-color: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.task-balance.positive {
+  background-color: #E8F5E9;
+  color: #4CAF50;
+}
+
+.task-balance.negative {
+  background-color: #FFEBEE;
+  color: #F44336;
+}
+
+/* Modal Task Metrics */
+.metric-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 15px;
+}
+
+.metric-label {
+  color: #666;
+}
+
+.metric-value {
+  font-weight: bold;
+}
+
+.metric-value.positive {
+  color: #4CAF50;
+}
+
+.metric-value.negative {
+  color: #F44336;
+}
+
+.achieved-input {
+  width: 60px;
+  padding: 4px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.task-metrics-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.task-metrics-input input {
+  width: 80px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.balance-preview {
+  background-color: #f5f5f5;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+/* Day balance indicator */
+.day-balance {
+  font-size: 10px;
+  font-weight: bold;
+  padding: 1px 3px;
+  border-radius: 3px;
+  background-color: #f5f5f5;
+  margin-top: 2px;
+}
+
+.positive-balance .day-balance {
+  color: #4CAF50;
+}
+
+.negative-balance .day-balance {
+  color: #F44336;
+}
+
+/* Task header in modal */
+.task-header {
+  margin-bottom: 8px;
+}
+
+@media (max-width: 768px) {
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .task-metrics-input {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .task-metrics-input input {
+    width: 100%;
+  }
+}
+
+/* Modal Styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.modal-header h3 {
+  color: #CC7722;
+  margin: 0;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+}
+
+.task-list {
+  margin-bottom: 20px;
+}
+
+.task-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  gap: 10px;
+}
+
+.task-item .task-details {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.task-item .task-category {
+  background-color: #CC7722;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.delete-task {
+  background: none;
+  border: none;
+  color: #ff4444;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0 5px;
+}
+
+.task-input-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.category-select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  flex: 1;
+}
+
+.task-input-group input {
+  flex: 2;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.add-task button {
+  width: 100%;
+  padding: 10px;
+  background-color: #CC7722;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.add-task button:hover {
+  background-color: #B36B1E;
+}
+
+@media (max-width: 768px) {
+  .calendar td {
+    height: 80px;
+  }
+  
+  .day-number {
+    padding: 5px;
+    font-size: 14px;
+  }
+  
+  .calendar th {
+    padding: 10px;
+    font-size: 14px;
+  }
+  
+  .task-input-group {
+    flex-direction: column;
+  }
+  
+  .category-grid {
+    grid-template-columns: 1fr;
+  }
+}
