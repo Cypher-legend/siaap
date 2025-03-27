@@ -41,7 +41,7 @@ app.post('/api/staff/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
     
-    res.json({ message: 'Login successful' });
+    res.json({ message: 'Login successful' }); 
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Server error' });
@@ -85,7 +85,7 @@ app.get('/api/children/:id', async (req, res) => {
     
     const result = await pool.query(
       'SELECT * FROM child_profiles WHERE id = $1',
-      [id]
+      [id]``  
     );
     
     if (result.rows.length === 0) {
