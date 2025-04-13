@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
+const role = localStorage.getItem('role');
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -26,13 +27,15 @@ const Dashboard = () => {
         console.log('Session Registration clicked');
         break;
       case 'Referral & Access':
-        navigate('/referral');
+        // navigate('/Referral & Access'); // To be implemented
+        console.log('Referral & Access clicked');
         break;
       case 'Planner':
         navigate('/planner');
         break;
       case 'Progress':
-        navigate('/progress');
+        // navigate('/Progress'); // To be implemented
+        console.log('Progress clicked');
         break;
       default:
         break;
@@ -59,7 +62,8 @@ const Dashboard = () => {
         console.log('Attendance Records clicked');
         break;
       case 'Leave':
-        navigate('/admin/leave');
+        // navigate('/admin/Leave'); // To be implemented
+        console.log('Leave clicked');
         break;
       case 'Compensatory Work':
         // navigate('/admin/compensatory'); // To be implemented
@@ -116,55 +120,57 @@ const Dashboard = () => {
           </div>
 
           {/* Admin Section */}
-          <div className="dropdown-container admin-section">
-            <button 
-              className="dropdown-button"
-              onClick={handleAdminClick}
-            >
-              Admin {isAdminDropdownOpen ? '▼' : '▶'}
-            </button>
-            
-            {isAdminDropdownOpen && (
-              <div className="dropdown-content">
-                <button 
-                  className="dropdown-item"
-                  onClick={() => handleAdminOptionClick('User Management')}
-                >
-                  User Management
-                </button>
-                <button 
-                  className="dropdown-item"
-                  onClick={() => handleAdminOptionClick('Reports')}
-                >
-                  Reports
-                </button>
-                <button 
-                  className="dropdown-item"
-                  onClick={() => handleAdminOptionClick('Settings')}
-                >
-                  Settings
-                </button>
-                <button 
-                  className="dropdown-item"
-                  onClick={() => handleAdminOptionClick('Attendance Records')}
-                >
-                  Attendance Records
-                </button>
-                <button 
-                  className="dropdown-item"
-                  onClick={() => handleAdminOptionClick('Leave')}
-                >
-                  Leave
-                </button>
-                <button 
-                  className="dropdown-item"
-                  onClick={() => handleAdminOptionClick('Compensatory Work')}
-                >
-                  Compensatory Work
-                </button>
-              </div>
-            )}
-          </div>
+          {role && role === 'admin' && (
+            <div className="dropdown-container admin-section">
+              <button 
+                className="dropdown-button"
+                onClick={handleAdminClick}
+              >
+                Admin {isAdminDropdownOpen ? '▼' : '▶'}
+              </button>
+              
+              {isAdminDropdownOpen && (
+                <div className="dropdown-content">
+                  <button 
+                    className="dropdown-item"
+                    onClick={() => handleAdminOptionClick('User Management')}
+                  >
+                    User Management
+                  </button>
+                  <button 
+                    className="dropdown-item"
+                    onClick={() => handleAdminOptionClick('Reports')}
+                  >
+                    Reports
+                  </button>
+                  <button 
+                    className="dropdown-item"
+                    onClick={() => handleAdminOptionClick('Settings')}
+                  >
+                    Settings
+                  </button>
+                  <button 
+                    className="dropdown-item"
+                    onClick={() => handleAdminOptionClick('Attendance Records')}
+                  >
+                    Attendance Records
+                  </button>
+                  <button 
+                    className="dropdown-item"
+                    onClick={() => handleAdminOptionClick('Leave')}
+                  >
+                    Leave
+                  </button>
+                  <button 
+                    className="dropdown-item"
+                    onClick={() => handleAdminOptionClick('Compensatory Work')}
+                  >
+                    Compensatory Work
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
         
         <div className="main-content">
