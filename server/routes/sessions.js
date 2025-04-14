@@ -19,33 +19,69 @@ router.get('/children', authenticateToken, async (req, res) => {
   }
 });
 
-// Create a new session for a child
+// Get sessions for a child
+router.get('/:childId', authenticateToken, async (req, res) => {
+  const { childId } = req.params;
+  try {
+    const result = await pool.query(
+      'SELECT * FROM sessions WHERE child_id = $1 ORDER BY date ASC',
+      [childId]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error fetching sessions' });
+  }
+});
+
+// Create a new session
 router.post('/', authenticateToken, async (req, res) => {
   const { child_id, date, notes } = req.body;
 
   try {
-    // Get the current session count for the child
-    const countResult = await pool.query(
-      'SELECT COUNT(*) FROM sessions WHERE child_id = $1',
+    // 1. Get all existing sessions for this child, ordered by date
+    const sessionsResult = await pool.query(
+      'SELECT id, date FROM sessions WHERE child_id = $1 ORDER BY date ASC',
       [child_id]
     );
-    const sessionNum = parseInt(countResult.rows[0].count) + 1;
 
-    // Insert new session
-    await pool.query(
-      'INSERT INTO sessions (child_id, date, notes, child_session_num) VALUES ($1, $2, $3, $4)',
-      [child_id, date, notes, sessionNum]
+    // 2. Determine position for the new session
+    let newIndex = sessionsResult.rows.findIndex(s => new Date(date) < new Date(s.date));
+    if (newIndex === -1) newIndex = sessionsResult.rows.length;
+
+    // 3. Insert new session and get its id
+    const insertResult = await pool.query(
+      'INSERT INTO sessions (child_id, date, notes) VALUES ($1, $2, $3) RETURNING id',
+      [child_id, date, notes]
+    );
+    const newSessionId = insertResult.rows[0].id;
+
+    // 4. Re-query including the new session
+    const allSessions = await pool.query(
+      'SELECT id, date FROM sessions WHERE child_id = $1 ORDER BY date ASC',
+      [child_id]
     );
 
-    // Get child info for confirmation message
-    console.log("Creating session for child_id:", child_id);
-    const childInfo = await pool.query('SELECT first_name, last_name FROM children WHERE id = $1', [child_id]);
+    // 5. Reassign child_session_num based on sorted order
+    for (let i = 0; i < allSessions.rows.length; i++) {
+      await pool.query(
+        'UPDATE sessions SET child_session_num = $1 WHERE id = $2',
+        [i + 1, allSessions.rows[i].id]
+      );
+    }
 
-    if (childInfo.rows.length === 0) {
-        return res.status(404).json({ message: 'Child not found' });
-      }
+    // 6. Get session number and child name
+    const { rows: sessionNumRow } = await pool.query(
+      'SELECT child_session_num FROM sessions WHERE id = $1',
+      [newSessionId]
+    );
+    const sessionNum = sessionNumRow[0].child_session_num;
 
-    const { first_name, last_name } = childInfo.rows[0];
+    const { rows: childInfo } = await pool.query(
+      'SELECT first_name, last_name FROM children WHERE id = $1',
+      [child_id]
+    );
+    const { first_name, last_name } = childInfo[0];
 
     res.json({ sessionNum, name: `${first_name} ${last_name}`, date });
   } catch (err) {

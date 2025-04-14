@@ -40,7 +40,7 @@ const DashboardLayout = () => {
                     Questions
                 </button>
                 <button className="dropdown-item" onClick={() => navigate('/program/create-session')}                    >
-                    Session Creation
+                    Session Management
                 </button>
               </div>
             )}

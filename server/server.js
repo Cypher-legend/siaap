@@ -15,6 +15,7 @@ app.use('/api/locations', require('./routes/locations'));
 app.use('/api/children', require('./routes/children'));
 app.use('/api/questions', require('./routes/questions'));
 app.use('/api/sessions', require('./routes/sessions'));
+app.use('/api', require('./routes/answers'));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

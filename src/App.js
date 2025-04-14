@@ -9,6 +9,7 @@ import Planner from './components/planner';
 import ChildrenTablePage from './components/ChildrenTablePage';
 import QuestionTablePage from './components/QuestionTablePage';
 import CreateSessionPage from './components/CreateSessionPage';
+import SessionAnswersPage from './components/SessionAnswersPage';
 
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
             <Route path="/program/children" element={<ChildrenTablePage />} />
             <Route path="/program/questions" element={<QuestionTablePage />} />
             <Route path="/program/create-session" element={<CreateSessionPage />} />
+            <Route path="/session-answers" element={<SessionAnswersPage />} />
           </Route>
         </Routes>
       </div>
