@@ -1,9 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import './ChildrenTablePage.css';
 
+const highlightMatch = (text, query) => {
+  if (!query) return text;
+  const regex = new RegExp(`(${query})`, 'gi');
+  return text.replace(regex, '<mark>$1</mark>');
+};
+
 const ChildrenTablePage = () => {
   const [children, setChildren] = useState([]);
   const [sortedChildren, setSortedChildren] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: '', direction: '' });
 
   const token = localStorage.getItem('token');
@@ -33,7 +40,7 @@ const ChildrenTablePage = () => {
       direction = 'desc';
     }
 
-    const sorted = [...children].sort((a, b) => {
+    const sorted = [...sortedChildren].sort((a, b) => {
       if (a[key] < b[key]) return direction === 'asc' ? -1 : 1;
       if (a[key] > b[key]) return direction === 'asc' ? 1 : -1;
       return 0;
@@ -52,15 +59,34 @@ const ChildrenTablePage = () => {
 
   const resetFilters = () => {
     setSortedChildren(children);
+    setSearchTerm('');
     setSortConfig({ key: '', direction: '' });
   };
 
+  const filteredChildren = sortedChildren.filter(
+    (child) =>
+      child.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      child.last_name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="children-table-container">
+      <div className="search-bar">
+        <label htmlFor="search">Search database for all first and last names:</label>
+        <input
+          id="search"
+          type="text"
+          placeholder="Enter name..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
       <div className="children-table-header">
         <h2>Children</h2>
         <button className="reset-btn" onClick={resetFilters}>Reset Filters</button>
       </div>
+
       <table className="children-table">
         <thead>
           <tr>
@@ -74,11 +100,11 @@ const ChildrenTablePage = () => {
           </tr>
         </thead>
         <tbody>
-          {sortedChildren.map(child => (
+          {filteredChildren.map(child => (
             <tr key={child.id}>
               <td>{child.id}</td>
-              <td>{child.first_name}</td>
-              <td>{child.last_name}</td>
+              <td dangerouslySetInnerHTML={{ __html: highlightMatch(child.first_name, searchTerm) }} />
+              <td dangerouslySetInnerHTML={{ __html: highlightMatch(child.last_name, searchTerm) }} />
               <td>{child.dob.slice(0, 10)}</td>
               <td>{child.age}</td>
               <td>{child.gender}</td>

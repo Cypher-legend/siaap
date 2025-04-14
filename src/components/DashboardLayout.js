@@ -36,6 +36,12 @@ const DashboardLayout = () => {
                 <button className="dropdown-item" onClick={() => navigate('/program/children')}>
                   Children
                 </button>
+                <button className="dropdown-item" onClick={() => navigate('/program/questions')}                    >
+                    Questions
+                </button>
+                <button className="dropdown-item" onClick={() => navigate('/program/create-session')}                    >
+                    Session Creation
+                </button>
               </div>
             )}
           </div>
