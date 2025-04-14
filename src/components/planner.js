@@ -29,10 +29,10 @@ const Planner = () => {
   const [selectedCategory, setSelectedCategory] = useState(TASK_CATEGORIES[0]);
   
   // Get progress data for synchronization if needed
-  const [progressData, setProgressData] = useState(() => {
-    const savedProgress = localStorage.getItem('progressActivities');
-    return savedProgress ? JSON.parse(savedProgress) : { planned: [], unplanned: [] };
-  });
+  // const [progressData, setProgressData] = useState(() => {
+  //   const savedProgress = localStorage.getItem('progressActivities');
+  //   return savedProgress ? JSON.parse(savedProgress) : { planned: [], unplanned: [] };
+  // });
 
   // Save tasks to localStorage whenever they change
   useEffect(() => {
@@ -157,23 +157,23 @@ const Planner = () => {
     });
     
     // Update progress data for synchronization
-    const newProgressTask = {
-      task: newTask.trim(),
-      target: targetValue,
-      date: dateStr,
-      targetsAchieved: achievedValue,
-      category: selectedCategory,
-      id: `${dateStr}-${Date.now()}`
-    };
+    // const newProgressTask = {
+    //   task: newTask.trim(),
+    //   target: targetValue,
+    //   date: dateStr,
+    //   targetsAchieved: achievedValue,
+    //   category: selectedCategory,
+    //   id: `${dateStr}-${Date.now()}`
+    // };
     
-    setProgressData(prev => {
-      const updatedProgress = {
-        ...prev,
-        planned: [...prev.planned, newProgressTask]
-      };
-      localStorage.setItem('progressActivities', JSON.stringify(updatedProgress));
-      return updatedProgress;
-    });
+    // setProgressData(prev => {
+    //   const updatedProgress = {
+    //     ...prev,
+    //     planned: [...prev.planned, newProgressTask]
+    //   };
+    //   localStorage.setItem('progressActivities', JSON.stringify(updatedProgress));
+    //   return updatedProgress;
+    // });
     
     // Reset form and close modal
     setNewTask('');
@@ -364,7 +364,6 @@ const Planner = () => {
 
   return (
     <div className="planner-container">
-      <h1 className="title">South India AIDS Action Programme</h1>
       
       <div className="planner-content">
         <div className="calendar-header">
