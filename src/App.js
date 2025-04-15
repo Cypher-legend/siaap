@@ -29,7 +29,7 @@ function App() {
             <Route path="/admin/users" element={<UserCreationPage />} />
             <Route path="/program/children" element={<ChildrenTablePage />} />
             <Route path="/program/questions" element={<QuestionTablePage />} />
-            <Route path="/program/create-session" element={<CreateSessionPage />} />
+            <Route path="/program/session-management" element={<CreateSessionPage />} />
             <Route path="/session-answers" element={<SessionAnswersPage />} />
             <Route path="/program/edit-child" element={<EditChild />} />
             <Route path="/program/edit-questions" element={<EditQuestion />} />
@@ -40,5 +40,25 @@ function App() {
     </Router>
   );
 }
+
+const originalFetch = window.fetch;
+
+window.fetch = async (...args) => {
+  const res = await originalFetch(...args);
+  const contentType = res.headers.get("Content-Type");
+
+  if (contentType && contentType.includes("application/json")) {
+    return res; // valid JSON response, let it pass through
+  }
+
+  // For everything else (HTML, etc.), clone before reading
+  const cloned = res.clone();
+  const text = await cloned.text();
+
+  console.warn('⚠️ Received non-JSON response from:', args[0], '\nContent preview:\n', text.slice(0, 200));
+
+  return res; // return original response (unconsumed)
+};
+
 
 export default App;
