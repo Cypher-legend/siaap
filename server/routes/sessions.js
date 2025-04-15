@@ -34,6 +34,43 @@ router.get('/:childId', authenticateToken, async (req, res) => {
   }
 });
 
+// GET all sessions for the planner view (with child info)
+router.get('/', authenticateToken, async (req, res) => {
+    try {
+      const { setlocation } = req.user;
+      const sessionsQuery = setlocation === 0
+        ? `SELECT s.*, c.first_name, c.last_name, c.id as child_id
+           FROM sessions s
+           JOIN children c ON s.child_id = c.id`
+        : `SELECT s.*, c.first_name, c.last_name, c.id as child_id
+           FROM sessions s
+           JOIN children c ON s.child_id = c.id
+           WHERE c.setlocation = $1`;
+  
+      const result = await pool.query(sessionsQuery, setlocation === 0 ? [] : [setlocation]);
+  
+      // Attach nested child object for frontend
+      const sessions = result.rows.map(row => ({
+        id: row.id,
+        child_id: row.child_id,
+        date: row.date,
+        notes: row.notes,
+        child_session_num: row.child_session_num,
+        compl_status: row.compl_status,
+        child: {
+          id: row.child_id,
+          first_name: row.first_name,
+          last_name: row.last_name
+        }
+      }));
+  
+      res.json(sessions);
+    } catch (err) {
+      console.error('Error fetching sessions for planner:', err);
+      res.status(500).json({ message: 'Error fetching sessions' });
+    }
+  });
+
 // Create a new session
 router.post('/', authenticateToken, async (req, res) => {
   const { child_id, date, notes } = req.body;

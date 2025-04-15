@@ -36,11 +36,19 @@ const DashboardLayout = () => {
                 <button className="dropdown-item" onClick={() => navigate('/program/children')}>
                   Children
                 </button>
-                <button className="dropdown-item" onClick={() => navigate('/program/questions')}                    >
+                <button className="dropdown-item" onClick={() => navigate('/program/questions')}>
                     Questions
                 </button>
-                <button className="dropdown-item" onClick={() => navigate('/program/create-session')}                    >
+                <button className="dropdown-item" onClick={() => navigate('/program/create-session')}>
                     Session Management
+                </button>
+                <button className="dropdown-item" onClick={() => navigate('/program/edit-child')}>
+                    Create/Edit Children
+                </button>
+                <button
+                className="dropdown-item logout-btn"
+                onClick={() => {localStorage.removeItem('token'); localStorage.removeItem('role'); navigate('/');}}>
+                    Logout
                 </button>
               </div>
             )}
@@ -56,6 +64,15 @@ const DashboardLayout = () => {
                   <button className="dropdown-item" onClick={() => navigate('/admin/users')}>
                     User Management
                   </button>
+                  <button className="dropdown-item" onClick={() => navigate('/program/edit-questions')}>
+                    Edit Questions
+                  </button>
+                  <button 
+      className="dropdown-item"
+      onClick={() => navigate('/admin/visualizations')}
+    >
+      Visualizations
+    </button>
                 </div>
               )}
             </div>

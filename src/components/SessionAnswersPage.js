@@ -49,6 +49,12 @@ const SessionAnswersPage = () => {
   };
 
   const handleSubmitAnswer = async (questionId) => {
+    const value = answers[questionId];
+    if (value === undefined || value === null || value === '') {
+      alert("Please select an answer before submitting.");
+      return;
+    }
+  
     try {
       await fetch('http://localhost:5000/api/answers', {
         method: 'POST',
@@ -59,15 +65,16 @@ const SessionAnswersPage = () => {
         body: JSON.stringify({
           session_id: sessionId,
           question_id: questionId,
-          answer_value: answers[questionId]
+          answer_value: value
         })
       });
-      setSubmitted((prev) => ({ ...prev, [questionId]: answers[questionId] }));
+      setSubmitted((prev) => ({ ...prev, [questionId]: value }));
     } catch (err) {
       alert('Failed to submit answer');
       console.error(err);
     }
   };
+  
 
   const handleCompleteSession = async () => {
     try {
@@ -76,7 +83,7 @@ const SessionAnswersPage = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert('Session marked as complete!');
-      navigate('/program/sessions');
+      navigate('/program/create-session');
     } catch (err) {
       alert('Could not complete session');
     }
@@ -103,37 +110,35 @@ const SessionAnswersPage = () => {
       {Object.entries(questionsByCategory).map(([category, qs]) => (
         <div key={category} className="category-section">
           <h3 className="category-header">{category}</h3>
-          {qs.map((q) => {
-            const submittedVal = submitted[q.id];
-            const currentVal = answers[q.id];
-            const isSubmitted = submittedVal !== undefined;
-            const isChanged = isSubmitted && submittedVal !== currentVal;
-            return (
-              <div
-                key={q.id}
-                className={`question-row 
-                  ${isSubmitted ? 'answered' : ''} 
-                  ${isChanged ? 'changed' : ''}
-                `}
-              >
-                <span>{q.text}</span>
-                <select
-                  value={currentVal ?? ''}
-                  onChange={(e) => handleAnswerChange(q.id, e.target.value)}
-                  className={isChanged ? 'edited-select' : ''}
-                >
-                  <option value="">-- Select --</option>
-                  <option value="1">Yes</option>
-                  <option value="0">Maybe</option>
-                  <option value="-1">No</option>
-                </select>
-                <button onClick={() => handleSubmitAnswer(q.id)}>✔</button>
-              </div>
-            );
-          })}
+            {qs.map((q) => {
+                const submittedVal = submitted[q.id];
+                const currentVal = answers[q.id] ?? '';
+                const isSubmitted = submittedVal !== undefined;
+                const isChanged = isSubmitted && (currentVal === '' || parseInt(currentVal) !== submittedVal);
+
+                return (
+                    <div
+                    key={q.id}
+                    className={`question-row ${isSubmitted ? 'answered' : ''} ${isChanged ? 'changed' : ''}`}
+                    >
+                    <span>{q.text}</span>
+                    <select
+                        value={currentVal}
+                        onChange={(e) => handleAnswerChange(q.id, e.target.value)}
+                        className={isChanged ? 'edited-select' : ''}
+                    >
+                        <option value="">-- Select --</option>
+                        <option value="1" style={submittedVal === 1 ? { backgroundColor: '#C8E6C9' } : {}}>Yes</option>
+                        <option value="0" style={submittedVal === 0 ? { backgroundColor: '#C8E6C9' } : {}}>Maybe</option>
+                        <option value="-1" style={submittedVal === -1 ? { backgroundColor: '#C8E6C9' } : {}}>No</option>
+                    </select>
+                    <button onClick={() => handleSubmitAnswer(q.id)}>✔</button>
+                    </div>
+                );
+            })}
+
         </div>
       ))}
-
       <button className="complete-btn" onClick={handleCompleteSession}>
         Complete Session
       </button>

@@ -84,3 +84,11 @@
   select option[style*="C8E6C9"] {
     background-color: #C8E6C9 !important; /* Light green for match */
   }
+
+  .question-row.answered {
+    background-color: #e0f7e9; /* green highlight */
+  }
+  
+  .question-row.changed {
+    background-color: #ffe0e0; /* red highlight */
+  }

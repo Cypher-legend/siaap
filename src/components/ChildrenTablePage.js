@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './ChildrenTablePage.css';
+import { useNavigate } from 'react-router-dom';
 
 const highlightMatch = (text, query) => {
   if (!query) return text;
@@ -14,6 +15,7 @@ const ChildrenTablePage = () => {
   const [sortConfig, setSortConfig] = useState({ key: '', direction: '' });
 
   const token = localStorage.getItem('token');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchChildren = async () => {
@@ -69,6 +71,10 @@ const ChildrenTablePage = () => {
       child.last_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleRowClick = (child) => {
+    navigate('/program/edit-child', { state: { child } });
+  };
+
   return (
     <div className="children-table-container">
       <div className="search-bar">
@@ -87,6 +93,8 @@ const ChildrenTablePage = () => {
         <button className="reset-btn" onClick={resetFilters}>Reset Filters</button>
       </div>
 
+      <p className="click-instruction">Click on a child to edit or delete information.</p>
+
       <table className="children-table">
         <thead>
           <tr>
@@ -101,7 +109,7 @@ const ChildrenTablePage = () => {
         </thead>
         <tbody>
           {filteredChildren.map(child => (
-            <tr key={child.id}>
+            <tr key={child.id} onClick={() => handleRowClick(child)} className="clickable-row">
               <td>{child.id}</td>
               <td dangerouslySetInnerHTML={{ __html: highlightMatch(child.first_name, searchTerm) }} />
               <td dangerouslySetInnerHTML={{ __html: highlightMatch(child.last_name, searchTerm) }} />
