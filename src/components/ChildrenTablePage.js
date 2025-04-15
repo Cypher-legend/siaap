@@ -21,9 +21,7 @@ const ChildrenTablePage = () => {
     const fetchChildren = async () => {
       try {
         const res = await fetch('http://localhost:5000/api/children', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
         setChildren(data);
@@ -72,7 +70,7 @@ const ChildrenTablePage = () => {
   );
 
   const handleRowClick = (child) => {
-    navigate('/program/edit-child', { state: { child } });
+    navigate('/program/session-management', { state: { child } });
   };
 
   return (
@@ -93,7 +91,7 @@ const ChildrenTablePage = () => {
         <button className="reset-btn" onClick={resetFilters}>Reset Filters</button>
       </div>
 
-      <p className="click-instruction">Click on a child to edit or delete information.</p>
+      <p className="click-instruction">Click on a child to manage sessions.</p>
 
       <table className="children-table">
         <thead>

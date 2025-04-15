@@ -1,77 +1,112 @@
-// src/components/Visualizations.js
 import React, { useEffect, useState } from 'react';
 import { Pie, Bar, Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  ArcElement,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Tooltip,
+  Legend,
+  Title,
+} from 'chart.js';
 import './VisualizationsPage.css';
 
-const Visualizations = () => {
-  const [genderData, setGenderData] = useState({});
-  const [locationData, setLocationData] = useState({});
-  const [sessionsData, setSessionsData] = useState({});
-  const [categoryData, setCategoryData] = useState({});
-  const [engagementData, setEngagementData] = useState({});
-  const [ageData, setAgeData] = useState({});
+ChartJS.register(
+  ArcElement,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Tooltip,
+  Legend,
+  Title
+);
+
+const VisualizationsPage = () => {
+  const [charts, setCharts] = useState({});
 
   useEffect(() => {
-    fetch('/api/visualizations/gender')
-      .then(res => res.json())
-      .then(data => setGenderData(data));
+    const fetchCharts = async () => {
+      try {
+        const res = await fetch('/api/visualizations');
+        const text = await res.text();
+        try {
+          const data = JSON.parse(text);
+          setCharts(data);
+        } catch (jsonErr) {
+          console.error("❌ Failed to fetch visualizations: Expected JSON, received:", text);
+        }
+      } catch (err) {
+        console.error('❌ Fetch error:', err);
+      }
+    };
 
-    fetch('/api/visualizations/location')
-      .then(res => res.json())
-      .then(data => setLocationData(data));
-
-    fetch('/api/visualizations/sessions')
-      .then(res => res.json())
-      .then(data => setSessionsData(data));
-
-    fetch('/api/visualizations/category')
-      .then(res => res.json())
-      .then(data => setCategoryData(data));
-
-    fetch('/api/visualizations/engagement')
-      .then(res => res.json())
-      .then(data => setEngagementData(data));
-
-    fetch('/api/visualizations/age')
-      .then(res => res.json())
-      .then(data => setAgeData(data));
+    fetchCharts();
   }, []);
+
+  const renderChart = (type, title, data, hideLegend = false, integerYAxis = false, fullWidth = false) => {
+    if (!data || !data.labels || data.labels.length === 0) {
+      return (
+        <div className="chart-box">
+          <h3>{title}</h3>
+          <p>No Data Available</p>
+        </div>
+      );
+    }
+
+    const chartProps = {
+      data,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: hideLegend ? { display: false } : { position: 'bottom' },
+          title: { display: true, text: title }
+        },
+        scales: integerYAxis
+          ? {
+              y: {
+                ticks: {
+                  callback: function(value) {
+                    return Number.isInteger(value) ? value : '';
+                  }
+                }
+              }
+            }
+          : {}
+      }
+    };
+
+    return (
+      <div className={`chart-box ${fullWidth ? 'full-width' : ''}`}>
+        {type === 'pie' && <Pie {...chartProps} />}
+        {type === 'bar' && <Bar {...chartProps} />}
+        {type === 'line' && <Line {...chartProps} />}
+      </div>
+    );
+  };
 
   return (
     <div className="visualizations-container">
       <h2>General Visualizations</h2>
       <div className="chart-row">
-        <div className="chart-box">
-          <h3>Gender Distribution</h3>
-          <Pie data={genderData} />
-        </div>
-        <div className="chart-box">
-          <h3>Children by Location</h3>
-          <Bar data={locationData} />
-        </div>
-        <div className="chart-box">
-          <h3>Sessions Over Time</h3>
-          <Line data={sessionsData} />
-        </div>
+        {renderChart('pie', 'Gender Distribution', charts.gender)}
+        {renderChart('bar', 'Children by Location', charts.location, true, false, true)}
+        {renderChart('line', 'Sessions Over Time', charts.sessions)}
       </div>
 
       <h2>Advanced Visualizations</h2>
       <div className="chart-row">
-        <div className="chart-box">
-          <h3>Answers by Category</h3>
-          <Bar data={categoryData} />
-        </div>
-        <div className="chart-box">
-          <h3>Child Engagement</h3>
-          <Bar data={engagementData} />
-        </div>
-        <div className="chart-box">
-          <h3>Age Distribution</h3>
-          <Bar data={ageData} />
-        </div>
+        {renderChart('bar', 'Answers by Category', charts.category, true)}
+        {renderChart('bar', 'Child Engagement', charts.engagement, true)}
+        {renderChart('bar', 'Age Distribution', charts.age, true, true)}
       </div>
     </div>
   );
 };
 
-export default Visualizations;
+export default VisualizationsPage;

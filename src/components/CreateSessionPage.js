@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './CreateSessionPage.css';
 
 const CreateSessionPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const token = localStorage.getItem('token');
   const [children, setChildren] = useState([]);
   const [search, setSearch] = useState('');
-  const [selectedChild, setSelectedChild] = useState(null);
+  const [selectedChild, setSelectedChild] = useState(location.state?.child || null);
   const [filteredChildren, setFilteredChildren] = useState([]);
   const [date, setDate] = useState('');
   const [notes, setNotes] = useState('');
@@ -25,6 +26,13 @@ const CreateSessionPage = () => {
     };
     fetchChildren();
   }, [token]);
+
+  useEffect(() => {
+    if (selectedChild) {
+      handleSelectChild(selectedChild);
+    }
+    // eslint-disable-next-line
+  }, [selectedChild]);
 
   const handleSearchChange = (e) => {
     const query = e.target.value;
