@@ -19,11 +19,14 @@
   min-height: calc(100vh - 80px);
 }
 
+/* ✅ Fixed width sidebar */
 .sidebar {
-  width: 250px;
-  background-color: white;
-  padding: 20px;
-  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+  width: 240px;
+  min-width: 240px;
+  background-color: #f4f4f4;
+  padding: 16px;
+  border-right: 1px solid #ccc;
+  box-sizing: border-box;
 }
 
 .dropdown-container {
@@ -81,9 +84,12 @@
   padding-top: 20px;
 }
 
+/* ✅ Flexible content */
 .main-content {
-  flex-grow: 1;
-  padding: 20px;
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  background-color: #fff;
 }
 
 .welcome-message {
@@ -102,4 +108,20 @@
 .welcome-message p {
   color: #666;
   margin: 0;
+}
+
+.logout-btn {
+  margin-top: 20px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%;
+  font-weight: bold;
+}
+
+.logout-btn:hover {
+  background-color: #d32f2f;
 }

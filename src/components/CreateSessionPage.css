@@ -1,0 +1,125 @@
+.session-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  font-family: Arial, sans-serif;
+}
+
+.search-box {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+}
+
+.dropdown-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #ccc;
+  position: absolute;
+  width: 100%;
+  background: white;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.dropdown-list li {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.dropdown-list li:hover {
+  background-color: #f0f0f0;
+}
+
+.child-info {
+  margin: 20px 0;
+  color: #CC7722;
+}
+
+.session-history {
+  margin: 20px 0;
+}
+
+.session-history table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.session-history th,
+.session-history td {
+  padding: 8px 12px;
+  border: 1px solid #eee;
+}
+
+.session-history th {
+  background-color: #CC7722;
+  color: white;
+  text-align: left;
+}
+
+.warning {
+  color: red;
+  font-weight: bold;
+}
+
+.date-entry {
+  margin-top: 20px;
+}
+
+.date-entry input,
+.date-entry textarea {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  margin-bottom: 16px;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+.date-entry button {
+  padding: 10px 20px;
+  background-color: #CC7722;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.date-entry button:hover {
+  background-color: #B36B1E;
+}
+
+.projected-session {
+  color: #333;
+  font-size: 14px;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.clickable-row {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.clickable-row:hover {
+  background-color: #FFF3E0;
+}
+
+.session-note {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 8px;
+}

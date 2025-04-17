@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './LoginPage.css';
+import { jwtDecode } from 'jwt-decode';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -10,22 +11,36 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+  
     try {
-      // Here you would typically make an API call to authenticate the user
-      console.log('Login attempted:', { mobileNumber, password });
-      
-      // For now, we'll just simulate a successful login
-      alert('Login successful!');
-      
-      // Navigate to dashboard
+      const res = await fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mobileNumber, password }),
+      });
+  
+      const data = await res.json();
+  
+      if (!res.ok) {
+        alert(data.message || 'Login failed');
+        return;
+      }
+  
+      // Store JWT token
+      const token = data.token;
+      localStorage.setItem('token', token);
+  
+      // Decode token to get role and store it too
+      const decoded = jwtDecode(token);
+      localStorage.setItem('role', decoded.role);  // e.g. 'admin' or 'user'
+  
+      // Continue as normal
       navigate('/dashboard');
     } catch (error) {
       console.error('Login error:', error);
       alert('Login failed. Please try again.');
     }
   };
-  
   return (
     <div className="login-container">
       <h1 className="title">South India AIDS Action Programme</h1>
@@ -58,14 +73,6 @@ const LoginPage = () => {
 
           <button type="submit" className="sign-in-btn">
             SIGN IN
-          </button>
-          
-          <button 
-            type="button" 
-            className="register-btn" 
-            onClick={() => navigate('/register')}
-          >
-            New User Registration
           </button>
         </form>
       </div>

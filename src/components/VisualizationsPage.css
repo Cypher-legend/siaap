@@ -1,0 +1,22 @@
+.visualizations-container {
+    padding: 20px;
+  }
+  
+  .chart-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .chart-box {
+    flex: 1 1 30%;
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+  }
+  
+  .chart-error {
+    color: #cc0000;
+    font-weight: bold;
+    margin-top: 20px;
+  }
