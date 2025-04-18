@@ -29,4 +29,29 @@ router.get('/category/:category', authenticateToken, async (req, res) => {
   }
 });
 
+router.put('/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  const { text, category } = req.body;
+
+  if (!text || !category) {
+    return res.status(400).json({ message: 'Text and category are required' });
+  }
+
+  try {
+    const result = await pool.query(
+      'UPDATE questions SET text = $1, category = $2 WHERE id = $3 RETURNING *',
+      [text, category, id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'Question not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error updating question:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;
