@@ -136,3 +136,50 @@
     background-color: #d32f2f;
   }
   
+  .question-input {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+  }
+  
+  .question-input input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+  
+  .questions-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  .questions-table th,
+  .questions-table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+  }
+  
+  .questions-table th {
+    background-color: #CC7722;
+    color: white;
+  }
+  
+  .questions-table button {
+    margin-right: 8px;
+    padding: 4px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .questions-table tr.even {
+    background-color: #f9f9f9;
+  }
+  
+  .questions-table tr.odd {
+    background-color: #fff;
+  }
+  

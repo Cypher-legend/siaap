@@ -48,14 +48,12 @@ const SessionAnswersPage = () => {
     setAnswers((prev) => ({ ...prev, [questionId]: parseInt(value) }));
   };
 
-  const handleSubmitAnswer = async (questionId) => {
-    const value = answers[questionId];
-    if (value === undefined || value === null || value === '') {
-      alert("Please select an answer before submitting.");
-      return;
-    }
-  
-    try {
+  const handleSubmitAll = async () => {
+    const changed = Object.entries(answers).filter(
+      ([id, val]) => submitted[id] !== parseInt(val)
+    );
+
+    for (const [questionId, value] of changed) {
       await fetch('http://localhost:5000/api/answers', {
         method: 'POST',
         headers: {
@@ -68,26 +66,35 @@ const SessionAnswersPage = () => {
           answer_value: value
         })
       });
-      setSubmitted((prev) => ({ ...prev, [questionId]: value }));
-    } catch (err) {
-      alert('Failed to submit answer');
-      console.error(err);
     }
+
+    alert('✅ Answers submitted');
+    setSubmitted({ ...answers });
   };
-  
 
   const handleCompleteSession = async () => {
+    const allQuestions = Object.values(questionsByCategory).flat();
+    const unanswered = allQuestions.some(q => submitted[q.id] === undefined);
+
+    if (unanswered && !window.confirm('⚠️ Some questions are unanswered. Are you sure you want to complete this session?')) {
+      return;
+    }
+
     try {
       await fetch(`http://localhost:5000/api/sessions/${sessionId}/complete`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` }
       });
       alert('Session marked as complete!');
-      navigate('/program/create-session');
+      navigate('/program/session-management');
     } catch (err) {
       alert('Could not complete session');
     }
   };
+
+  const hasUnsubmittedChanges = Object.keys(answers).some(
+    (id) => answers[id] !== submitted[id]
+  );
 
   return (
     <div className="session-answers-container">
@@ -103,45 +110,52 @@ const SessionAnswersPage = () => {
       </div>
 
       <p className="blurb">
-        All questions are grouped by category. Select answers and submit them individually. 
-        Previously submitted answers are highlighted green. Edits are red until resubmitted.
+        All questions are grouped by category. Select and edit answers, then submit them using the button below.  
+        Submitted answers are green, unsaved edits are red.
       </p>
 
       {Object.entries(questionsByCategory).map(([category, qs]) => (
         <div key={category} className="category-section">
           <h3 className="category-header">{category}</h3>
-            {qs.map((q) => {
-                const submittedVal = submitted[q.id];
-                const currentVal = answers[q.id] ?? '';
-                const isSubmitted = submittedVal !== undefined;
-                const isChanged = isSubmitted && (currentVal === '' || parseInt(currentVal) !== submittedVal);
+          {qs.map((q) => {
+            const submittedVal = submitted[q.id];
+            const currentVal = answers[q.id] ?? '';
+            const isSubmitted = submittedVal !== undefined;
+            const isChanged = isSubmitted && (currentVal === '' || parseInt(currentVal) !== submittedVal);
 
-                return (
-                    <div
-                    key={q.id}
-                    className={`question-row ${isSubmitted ? 'answered' : ''} ${isChanged ? 'changed' : ''}`}
-                    >
-                    <span>{q.text}</span>
-                    <select
-                        value={currentVal}
-                        onChange={(e) => handleAnswerChange(q.id, e.target.value)}
-                        className={isChanged ? 'edited-select' : ''}
-                    >
-                        <option value="">-- Select --</option>
-                        <option value="1" style={submittedVal === 1 ? { backgroundColor: '#C8E6C9' } : {}}>Yes</option>
-                        <option value="0" style={submittedVal === 0 ? { backgroundColor: '#C8E6C9' } : {}}>Maybe</option>
-                        <option value="-1" style={submittedVal === -1 ? { backgroundColor: '#C8E6C9' } : {}}>No</option>
-                    </select>
-                    <button onClick={() => handleSubmitAnswer(q.id)}>✔</button>
-                    </div>
-                );
-            })}
-
+            return (
+              <div
+                key={q.id}
+                className={`question-row ${isSubmitted ? 'answered' : ''} ${isChanged ? 'changed' : ''}`}
+              >
+                <span className="question-text">{q.text}</span>
+                <select
+                  value={currentVal}
+                  onChange={(e) => handleAnswerChange(q.id, e.target.value)}
+                  className="dropdown"
+                >
+                  <option value="">-- Select --</option>
+                  <option value="1">Yes</option>
+                  <option value="0">Maybe</option>
+                  <option value="-1">No</option>
+                </select>
+              </div>
+            );
+          })}
         </div>
       ))}
-      <button className="complete-btn" onClick={handleCompleteSession}>
-        Complete Session
-      </button>
+      <div className="answer-actions">
+        <div className="left-actions">
+          {hasUnsubmittedChanges && (
+            <button className="submit-btn" onClick={handleSubmitAll}>Submit Answers</button>
+          )}
+        </div>
+        <div className="right-actions">
+          <button className="complete-btn" onClick={handleCompleteSession}>
+            Complete Session
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

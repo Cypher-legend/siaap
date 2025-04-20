@@ -34,10 +34,12 @@ router.get('/', async (req, res) => {
     `);
 
     const categoryRes = await pool.query(`
-      SELECT q.category, COUNT(*) as count
+      SELECT cat.name as category, COUNT(*) as count
       FROM answers a
       JOIN questions q ON a.question_id = q.id
-      GROUP BY q.category
+      JOIN categories cat ON q.category_id = cat.id
+      GROUP BY cat.name
+      ORDER BY cat.name
     `);
 
     const engagementRes = await pool.query(`

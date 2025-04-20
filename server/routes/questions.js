@@ -3,10 +3,15 @@ const router = express.Router();
 const pool = require('../db');
 const { authenticateToken } = require('../middleware/auth');
 
-// ✅ Get all questions
+// ✅ Get all questions with category names
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM questions ORDER BY id');
+    const result = await pool.query(`
+      SELECT q.id, q.text, q.category_id, c.name AS category
+      FROM questions q
+      JOIN categories c ON q.category_id = c.id
+      ORDER BY q.id
+    `);
     res.json(result.rows);
   } catch (err) {
     console.error('Error fetching questions:', err);
@@ -14,13 +19,19 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
-// ✅ Get questions by category
-router.get('/category/:category', authenticateToken, async (req, res) => {
-  const { category } = req.params;
+// ✅ Get questions by category ID
+router.get('/category/:categoryId', authenticateToken, async (req, res) => {
+  const { categoryId } = req.params;
   try {
     const result = await pool.query(
-      'SELECT * FROM questions WHERE category = $1 ORDER BY id',
-      [category]
+      `
+      SELECT q.id, q.text, q.category_id, c.name AS category
+      FROM questions q
+      JOIN categories c ON q.category_id = c.id
+      WHERE q.category_id = $1
+      ORDER BY q.id
+      `,
+      [categoryId]
     );
     res.json(result.rows);
   } catch (err) {
@@ -29,18 +40,39 @@ router.get('/category/:category', authenticateToken, async (req, res) => {
   }
 });
 
-router.put('/:id', authenticateToken, async (req, res) => {
-  const { id } = req.params;
-  const { text, category } = req.body;
+// ✅ Create new question
+router.post('/', authenticateToken, async (req, res) => {
+  const { text, category_id } = req.body;
 
-  if (!text || !category) {
-    return res.status(400).json({ message: 'Text and category are required' });
+  if (!text || !category_id) {
+    return res.status(400).json({ message: 'Text and category_id are required' });
   }
 
   try {
     const result = await pool.query(
-      'UPDATE questions SET text = $1, category = $2 WHERE id = $3 RETURNING *',
-      [text, category, id]
+      'INSERT INTO questions (text, category_id) VALUES ($1, $2) RETURNING *',
+      [text, category_id]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error('Error creating question:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// ✅ Update question
+router.put('/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  const { text, category_id } = req.body;
+
+  if (!text || !category_id) {
+    return res.status(400).json({ message: 'Text and category_id are required' });
+  }
+
+  try {
+    const result = await pool.query(
+      'UPDATE questions SET text = $1, category_id = $2 WHERE id = $3 RETURNING *',
+      [text, category_id, id]
     );
 
     if (result.rowCount === 0) {
@@ -50,6 +82,24 @@ router.put('/:id', authenticateToken, async (req, res) => {
     res.json(result.rows[0]);
   } catch (err) {
     console.error('Error updating question:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// ✅ Delete question
+router.delete('/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query('DELETE FROM questions WHERE id = $1 RETURNING *', [id]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'Question not found' });
+    }
+
+    res.json({ message: 'Question deleted' });
+  } catch (err) {
+    console.error('Error deleting question:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });

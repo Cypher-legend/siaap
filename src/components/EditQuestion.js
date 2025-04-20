@@ -5,13 +5,13 @@ const EditQuestion = () => {
   const token = localStorage.getItem('token');
   const [questions, setQuestions] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState('');
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [originalQuestion, setOriginalQuestion] = useState(null);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/questions/categories', {
+    fetch('http://localhost:5000/api/categories', {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -20,8 +20,8 @@ const EditQuestion = () => {
   }, []);
 
   useEffect(() => {
-    if (selectedCategory) {
-      fetch(`http://localhost:5000/api/questions/category/${encodeURIComponent(selectedCategory)}`, {
+    if (selectedCategoryId) {
+      fetch(`http://localhost:5000/api/questions/category/${selectedCategoryId}`, {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then(res => res.json())
@@ -30,7 +30,7 @@ const EditQuestion = () => {
     } else {
       setQuestions([]);
     }
-  }, [selectedCategory, token]);
+  }, [selectedCategoryId, token]);
 
   const handleSelectQuestion = (question) => {
     setEditingQuestion({ ...question });
@@ -50,7 +50,7 @@ const EditQuestion = () => {
 
     const body = {
       text: editingQuestion.text,
-      category: selectedCategory
+      category_id: parseInt(selectedCategoryId)
     };
 
     const res = await fetch(url, {
@@ -68,7 +68,7 @@ const EditQuestion = () => {
       setOriginalQuestion(null);
       setIsCreatingNew(false);
 
-      const newData = await fetch(`http://localhost:5000/api/questions/category/${encodeURIComponent(selectedCategory)}`, {
+      const newData = await fetch(`http://localhost:5000/api/questions/category/${selectedCategoryId}`, {
         headers: { Authorization: `Bearer ${token}` }
       }).then(res => res.json());
       setQuestions(newData);
@@ -91,7 +91,7 @@ const EditQuestion = () => {
       alert('🗑 Question deleted');
       setEditingQuestion(null);
       setOriginalQuestion(null);
-      const newData = await fetch(`http://localhost:5000/api/questions/category/${encodeURIComponent(selectedCategory)}`, {
+      const newData = await fetch(`http://localhost:5000/api/questions/category/${selectedCategoryId}`, {
         headers: { Authorization: `Bearer ${token}` }
       }).then(res => res.json());
       setQuestions(newData);
@@ -110,7 +110,7 @@ const EditQuestion = () => {
     <div className="edit-question-container">
       <div className="question-header">
         <h2>Edit Questions</h2>
-        {selectedCategory && (
+        {selectedCategoryId && (
           <button className="create-btn" onClick={handleCreateNew}>
             <span role="img" aria-label="Add">➕</span> New Question
           </button>
@@ -119,19 +119,19 @@ const EditQuestion = () => {
 
       <label>Select a Category:</label>
       <select
-        value={selectedCategory}
+        value={selectedCategoryId}
         onChange={(e) => {
-          setSelectedCategory(e.target.value);
+          setSelectedCategoryId(e.target.value);
           setEditingQuestion(null);
         }}
       >
         <option value="">-- Choose Category --</option>
         {categories.map(cat => (
-          <option key={cat} value={cat}>{cat}</option>
+          <option key={cat.id} value={cat.id}>{cat.name}</option>
         ))}
       </select>
 
-      {selectedCategory && (
+      {selectedCategoryId && (
         <>
           <p className="click-instruction">Click a question to edit or delete it.</p>
           <ul className="question-list">

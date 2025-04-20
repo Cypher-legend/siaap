@@ -33,15 +33,14 @@ const VisualizationsPage = () => {
     const fetchCharts = async () => {
       try {
         const res = await fetch('/api/visualizations');
-        const text = await res.text();
-        try {
-          const data = JSON.parse(text);
-          setCharts(data);
-        } catch (jsonErr) {
-          console.error("❌ Failed to fetch visualizations: Expected JSON, received:", text);
+        if (!res.ok) {
+          throw new Error(`HTTP error ${res.status}`);
         }
+        const data = await res.json();
+        console.log('✅ Visualizations data:', data); // Optional: debug
+        setCharts(data);
       } catch (err) {
-        console.error('❌ Fetch error:', err);
+        console.error('❌ Failed to fetch visualizations:', err);
       }
     };
 
@@ -71,7 +70,7 @@ const VisualizationsPage = () => {
           ? {
               y: {
                 ticks: {
-                  callback: function(value) {
+                  callback: function (value) {
                     return Number.isInteger(value) ? value : '';
                   }
                 }
