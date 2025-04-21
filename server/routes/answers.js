@@ -6,13 +6,19 @@ const { authenticateToken } = require('../middleware/auth');
 // Get list of categories from questions table
 router.get('/questions/categories', authenticateToken, async (req, res) => {
   try {
-    const result = await pool.query('SELECT DISTINCT category FROM questions ORDER BY category');
-    res.json(result.rows.map(row => row.category));
+    const result = await pool.query(`
+      SELECT DISTINCT c.name
+      FROM questions q
+      JOIN categories c ON q.category_id = c.id
+      ORDER BY c.name
+    `);
+    res.json(result.rows.map(row => row.name));
   } catch (err) {
     console.error('Error fetching categories:', err);
     res.status(500).json({ message: 'Error fetching categories' });
   }
 });
+
 
 // Get questions by category
 router.get('/questions', authenticateToken, async (req, res) => {
