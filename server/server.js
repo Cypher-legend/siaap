@@ -16,6 +16,7 @@ app.use('/api/questions', require('./routes/questions'));
 app.use('/api/sessions', require('./routes/sessions'));
 app.use('/api', require('./routes/answers'));
 app.use('/api/visualizations', require('./routes/visualizations'));
+app.use('/api/categories', require('./routes/categories'));
 
 
 // Server Startup

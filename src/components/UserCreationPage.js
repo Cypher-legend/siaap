@@ -1,129 +1,131 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import './UserCreationPage.css';
 
-const UserCreationPage = () => {
-  const navigate = useNavigate();
+const EditUsersPage = () => {
   const token = localStorage.getItem('token');
+  const [users, setUsers] = useState([]), [locations, setLocations] = useState([]);
+  const [search, setSearch] = useState(''), [selectedUser, setSelectedUser] = useState(null);
+  const [originalUser, setOriginalUser] = useState(null), [isCreating, setIsCreating] = useState(false);
 
-  const [mobileNumber, setMobileNumber] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState('user');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [setLocation, setSetLocation] = useState(0);
-  const [locations, setLocations] = useState([]);
+  const fetchData = async () => {
+    const [usersRes, locRes] = await Promise.all([
+      fetch('http://localhost:5000/api/users', { headers: { Authorization: `Bearer ${token}` } }),
+      fetch('http://localhost:5000/api/locations', { headers: { Authorization: `Bearer ${token}` } })
+    ]);
+    setUsers(await usersRes.json()); setLocations(await locRes.json());
+  };
 
-  // 🔄 Fetch locations on component mount
-  useEffect(() => {
-    const fetchLocations = async () => {
-      try {
-        const res = await fetch('http://localhost:5000/api/locations', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const data = await res.json();
-        setLocations(data);
-      } catch (err) {
-        console.error('Failed to fetch locations:', err);
-      }
+  useEffect(() => { fetchData(); }, [token]);
+
+  const filteredUsers = users.filter(u =>
+    Object.values(u).some(val => String(val).toLowerCase().includes(search.toLowerCase()))
+  );
+
+  const handleSelect = (u) => {
+    const formatted = {
+      firstName: u.first_name || '', lastName: u.last_name || '',
+      mobile_number: u.mobile_number || '', role: u.role || 'user',
+      setlocation: u.setlocation ?? 0, id: u.id
     };
+    setSelectedUser(formatted); setOriginalUser(formatted); setIsCreating(false);
+  };
 
-    fetchLocations();
-  }, [token]);
+  const handleChange = (field, val) => setSelectedUser(p => ({ ...p, [field]: val }));
+  const isSame = (field, val = selectedUser?.[field]) => val !== '' && originalUser?.[field] === val;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSave = async () => {
+    const payload = {
+      first_name: selectedUser.firstName || '', last_name: selectedUser.lastName || '',
+      mobile_number: selectedUser.mobile_number || '', role: selectedUser.role || '',
+      setlocation: selectedUser.setlocation ?? 0
+    };
+    if (isCreating) payload.password = selectedUser.password || '';
 
-    try {
-      const res = await fetch('http://localhost:5000/api/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          mobileNumber,
-          password,
-          role,
-          firstName,
-          lastName,
-          setlocation: setLocation,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        alert('User created successfully!');
-        navigate('/dashboard');
-      } else if (res.status === 400 && data.message === 'Mobile number already exists') {
-        alert('Mobile number already exists.');
-      } else {
-        alert(data.message || 'Unable to create new user.');
+    const res = await fetch(
+      isCreating ? 'http://localhost:5000/api/users' : `http://localhost:5000/api/users/${selectedUser.id}`,
+      {
+        method: isCreating ? 'POST' : 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload)
       }
-    } catch (err) {
-      console.error('Error creating user:', err);
-      alert('Something went wrong. Please try again.');
+    );
+
+    const msg = isCreating ? 'create' : 'update';
+    if (res.ok) {
+      alert(`✅ User ${msg}d!`);
+      setSelectedUser(null); setOriginalUser(null); setIsCreating(false); fetchData();
+    } else {
+      const err = await res.json();
+      alert(`❌ Failed to ${msg} user: ${err.message || 'Unknown error'}`);
     }
   };
 
+  const handleDelete = async () => {
+    if (!selectedUser?.id || !window.confirm('⚠️ Delete this user?')) return;
+    const res = await fetch(`http://localhost:5000/api/users/${selectedUser.id}`, {
+      method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.ok) {
+      alert('🗑 User deleted'); setSelectedUser(null); setOriginalUser(null); fetchData();
+    } else alert('❌ Delete failed');
+  };
+
+  const handleCreate = () => {
+    setIsCreating(true);
+    setSelectedUser({ firstName: '', lastName: '', mobile_number: '', password: '', role: 'user', setlocation: 0 });
+    setOriginalUser({});
+  };
+
   return (
-    <div className="user-creation-container">
-      <h2>Create New User</h2>
-      <form onSubmit={handleSubmit} className="user-form">
-        <label>First Name:</label>
-        <input
-          type="text"
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-          required
-        />
+    <div className="edit-child-container">
+      <div className="edit-child-header">
+        <h2>{isCreating ? 'Create New User' : 'Edit User'}</h2>
+        <button className="create-btn" onClick={handleCreate}>➕ Create New User</button>
+      </div>
 
-        <label>Last Name:</label>
-        <input
-          type="text"
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
-          required
-        />
+      <div className="search-bar">
+        <label>Search Users:</label>
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..." />
+      </div>
 
-        <label>Mobile Number:</label>
-        <input
-          type="tel"
-          value={mobileNumber}
-          onChange={(e) => setMobileNumber(e.target.value)}
-          required
-        />
-
-        <label>Password:</label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-
-        <label>Role:</label>
-        <select value={role} onChange={(e) => setRole(e.target.value)}>
-          <option value="user">user</option>
-          <option value="admin">admin</option>
-        </select>
-
-        <label>Location:</label>
-        <select value={setLocation} onChange={(e) => setSetLocation(parseInt(e.target.value))}>
-          {locations.map(loc => (
-            <option key={loc.id} value={loc.id}>
-              {loc.name}
-            </option>
+      <table className="children-table">
+        <thead>
+          <tr><th>ID</th><th>Mobile</th><th>Role</th><th>First</th><th>Last</th><th>Location</th></tr>
+        </thead>
+        <tbody>
+          {filteredUsers.map(u => (
+            <tr key={u.id} className="clickable-row" onClick={() => handleSelect(u)}>
+              <td>{u.id}</td><td>{u.mobile_number}</td><td>{u.role}</td>
+              <td>{u.first_name}</td><td>{u.last_name}</td>
+              <td>{locations.find(l => l.id === u.setlocation)?.name || 'N/A'}</td>
+            </tr>
           ))}
-        </select>
+        </tbody>
+      </table>
 
-        <button type="submit">Create User</button>
-      </form>
+      {selectedUser && (
+        <>
+          <p className="unsaved-warning"><strong>Note:</strong> Refreshing resets unsaved changes.</p>
+          <div className="child-form">
+            <input className={selectedUser.firstName ? isSame('firstName') ? 'field-unchanged' : 'field-edited' : ''} placeholder="First Name" value={selectedUser.firstName} onChange={e => handleChange('firstName', e.target.value)} />
+            <input className={selectedUser.lastName ? isSame('lastName') ? 'field-unchanged' : 'field-edited' : ''} placeholder="Last Name" value={selectedUser.lastName} onChange={e => handleChange('lastName', e.target.value)} />
+            <input className={selectedUser.mobile_number ? isSame('mobile_number') ? 'field-unchanged' : 'field-edited' : ''} placeholder="Mobile Number" value={selectedUser.mobile_number} onChange={e => handleChange('mobile_number', e.target.value)} />
+            {isCreating && <input type="password" className="field-edited" placeholder="Password" value={selectedUser.password || ''} onChange={e => handleChange('password', e.target.value)} />}
+            <select className={isSame('role') ? 'field-unchanged' : 'field-edited'} value={selectedUser.role} onChange={e => handleChange('role', e.target.value)}>
+              <option value="user">user</option><option value="admin">admin</option>
+            </select>
+            <select className={isSame('setlocation') ? 'field-unchanged' : 'field-edited'} value={selectedUser.setlocation} onChange={e => handleChange('setlocation', parseInt(e.target.value))}>
+              {locations.map(loc => <option key={loc.id} value={loc.id}>{loc.name}</option>)}
+            </select>
+            <div className="form-buttons">
+              <button className="submit-btn" onClick={handleSave}>✔ Save</button>
+              {!isCreating && <button className="delete-btn" onClick={handleDelete}>🗑 Delete</button>}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
 
-export default UserCreationPage;
+export default EditUsersPage;

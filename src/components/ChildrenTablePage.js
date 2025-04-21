@@ -2,123 +2,236 @@ import React, { useEffect, useState } from 'react';
 import './ChildrenTablePage.css';
 import { useNavigate } from 'react-router-dom';
 
-const highlightMatch = (text, query) => {
-  if (!query) return text;
-  const regex = new RegExp(`(${query})`, 'gi');
-  return text.replace(regex, '<mark>$1</mark>');
-};
-
 const ChildrenTablePage = () => {
-  const [children, setChildren] = useState([]);
-  const [sortedChildren, setSortedChildren] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortConfig, setSortConfig] = useState({ key: '', direction: '' });
-
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchChildren = async () => {
-      try {
-        const res = await fetch('http://localhost:5000/api/children', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        setChildren(data);
-        setSortedChildren(data);
-      } catch (err) {
-        console.error('Error fetching children:', err);
-      }
-    };
+  const [children, setChildren] = useState([]);
+  const [locations, setLocations] = useState([]);
+  const [search, setSearch] = useState('');
+  const [sortConfig, setSortConfig] = useState({ key: '', direction: '' });
+  const [editingChild, setEditingChild] = useState(null);
+  const [originalChild, setOriginalChild] = useState(null);
+  const [warningShown, setWarningShown] = useState(false);
 
-    fetchChildren();
+  useEffect(() => {
+    const fetchData = async () => {
+      const [childrenRes, locationsRes] = await Promise.all([
+        fetch('http://localhost:5000/api/children', {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        fetch('http://localhost:5000/api/locations', {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+      ]);
+      setChildren(await childrenRes.json());
+      setLocations(await locationsRes.json());
+    };
+    fetchData();
   }, [token]);
 
-  const handleSort = (key) => {
-    let direction = 'asc';
-    if (sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
-    }
-
-    const sorted = [...sortedChildren].sort((a, b) => {
-      if (a[key] < b[key]) return direction === 'asc' ? -1 : 1;
-      if (a[key] > b[key]) return direction === 'asc' ? 1 : -1;
-      return 0;
+  const filteredChildren = children
+    .filter(child =>
+      `${child.first_name} ${child.last_name}`.toLowerCase().includes(search.toLowerCase())
+    )
+    .sort((a, b) => {
+      const { key, direction } = sortConfig;
+      if (!key) return 0;
+      return (a[key] > b[key] ? 1 : -1) * (direction === 'asc' ? 1 : -1);
     });
 
-    setSortedChildren(sorted);
+  const handleSort = (key) => {
+    const direction = sortConfig.key === key && sortConfig.direction === 'asc' ? 'desc' : 'asc';
     setSortConfig({ key, direction });
   };
 
-  const getArrow = (key) => {
-    if (sortConfig.key === key) {
-      return sortConfig.direction === 'asc' ? '▲' : '▼';
+  const getArrow = (key) => sortConfig.key === key ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕';
+
+  const handleEditClick = (child) => {
+    setEditingChild({ ...child });
+    setOriginalChild({ ...child });
+  };
+
+  const handleCreate = () => {
+    setEditingChild({
+      first_name: '',
+      last_name: '',
+      dob: '',
+      gender: '',
+      setlocation: 1
+    });
+    setOriginalChild({});
+  };
+
+  const handleInputChange = (field, value) => {
+    if (field === 'setlocation' && editingChild.setlocation !== value && !warningShown) {
+      alert('⚠️ This child may no longer be visible based on location filter.');
+      setWarningShown(true);
     }
-    return '↕';
+
+    setEditingChild(prev => ({
+      ...prev,
+      [field]: field === 'dob' ? value : value
+    }));
   };
 
-  const resetFilters = () => {
-    setSortedChildren(children);
-    setSearchTerm('');
-    setSortConfig({ key: '', direction: '' });
+  const handleSubmit = async () => {
+    const isNew = !editingChild.id;
+    const endpoint = isNew
+      ? 'http://localhost:5000/api/children'
+      : `http://localhost:5000/api/children/${editingChild.id}`;
+    const method = isNew ? 'POST' : 'PUT';
+    const body = JSON.stringify(editingChild);
+
+    try {
+      const res = await fetch(endpoint, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body
+      });
+
+      if (res.ok) {
+        alert(isNew ? '✅ Child created' : '✅ Child updated');
+        setEditingChild(null);
+        setOriginalChild(null);
+        const refreshed = await fetch('http://localhost:5000/api/children', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setChildren(await refreshed.json());
+      } else {
+        alert('❌ Failed to save changes');
+      }
+    } catch (err) {
+      console.error('Save error:', err);
+    }
   };
 
-  const filteredChildren = sortedChildren.filter(
-    (child) =>
-      child.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      child.last_name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleDelete = async () => {
+    if (!editingChild?.id) return;
+    if (!window.confirm('⚠️ Are you sure you want to delete this child and all related data?')) return;
 
-  const handleRowClick = (child) => {
+    const res = await fetch(`http://localhost:5000/api/children/${editingChild.id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (res.ok) {
+      alert('🗑 Child deleted');
+      setEditingChild(null);
+      const refreshed = await fetch('http://localhost:5000/api/children', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setChildren(await refreshed.json());
+    } else {
+      alert('❌ Failed to delete child');
+    }
+  };
+
+  const navigateToSessions = (child) => {
     navigate('/program/session-management', { state: { child } });
   };
 
+  const isFieldEdited = (key) =>
+    editingChild?.[key] !== undefined &&
+    originalChild?.[key] !== undefined &&
+    editingChild[key] !== originalChild[key];
+
   return (
     <div className="children-table-container">
-      <div className="search-bar">
-        <label htmlFor="search">Search database for all first and last names:</label>
-        <input
-          id="search"
-          type="text"
-          placeholder="Enter name..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
-
       <div className="children-table-header">
         <h2>Children</h2>
-        <button className="reset-btn" onClick={resetFilters}>Reset Filters</button>
+        <button className="create-btn" onClick={handleCreate}>➕ Create New Child</button>
       </div>
 
-      <p className="click-instruction">Click on a child to manage sessions.</p>
+      <div className="search-bar">
+        <label>Search:</label>
+        <input value={search} onChange={(e) => setSearch(e.target.value)} />
+      </div>
 
       <table className="children-table">
         <thead>
           <tr>
-            <th onClick={() => handleSort('id')}>ID {getArrow('id')}</th>
-            <th onClick={() => handleSort('first_name')}>First Name {getArrow('first_name')}</th>
-            <th onClick={() => handleSort('last_name')}>Last Name {getArrow('last_name')}</th>
-            <th onClick={() => handleSort('dob')}>DOB {getArrow('dob')}</th>
-            <th onClick={() => handleSort('age')}>Age {getArrow('age')}</th>
-            <th onClick={() => handleSort('gender')}>Gender {getArrow('gender')}</th>
-            <th onClick={() => handleSort('setlocation')}>Set Location {getArrow('setlocation')}</th>
+            {['id', 'first_name', 'last_name', 'dob', 'age', 'gender', 'setlocation'].map((key) => (
+              <th key={key} onClick={() => handleSort(key)}>
+                {key.replace('_', ' ').toUpperCase()} {getArrow(key)}
+              </th>
+            ))}
+            <th>✏️</th>
           </tr>
         </thead>
         <tbody>
           {filteredChildren.map(child => (
-            <tr key={child.id} onClick={() => handleRowClick(child)} className="clickable-row">
-              <td>{child.id}</td>
-              <td dangerouslySetInnerHTML={{ __html: highlightMatch(child.first_name, searchTerm) }} />
-              <td dangerouslySetInnerHTML={{ __html: highlightMatch(child.last_name, searchTerm) }} />
-              <td>{child.dob.slice(0, 10)}</td>
-              <td>{child.age}</td>
-              <td>{child.gender}</td>
-              <td>{child.setlocation}</td>
+            <tr key={child.id}>
+              <td onClick={() => navigateToSessions(child)}>{child.id}</td>
+              <td onClick={() => navigateToSessions(child)}>{child.first_name}</td>
+              <td onClick={() => navigateToSessions(child)}>{child.last_name}</td>
+              <td onClick={() => navigateToSessions(child)}>{child.dob.slice(0, 10)}</td>
+              <td onClick={() => navigateToSessions(child)}>{child.age}</td>
+              <td onClick={() => navigateToSessions(child)}>{child.gender}</td>
+              <td onClick={() => navigateToSessions(child)}>
+                {locations.find(l => l.id === child.setlocation)?.name || child.setlocation}
+              </td>
+              <td>
+                <button className="edit-btn" onClick={() => handleEditClick(child)}>Edit</button>
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      {editingChild && (
+        <>
+          <p className="unsaved-warning">Note: Refreshing will reset unsaved changes.</p>
+          <div className="child-form">
+            <input
+              className={isFieldEdited('first_name') ? 'field-edited' : 'field-unchanged'}
+              placeholder="First Name"
+              value={editingChild.first_name || ''}
+              onChange={(e) => handleInputChange('first_name', e.target.value)}
+            />
+            <input
+              className={isFieldEdited('last_name') ? 'field-edited' : 'field-unchanged'}
+              placeholder="Last Name"
+              value={editingChild.last_name || ''}
+              onChange={(e) => handleInputChange('last_name', e.target.value)}
+            />
+            <input
+              className={isFieldEdited('gender') ? 'field-edited' : 'field-unchanged'}
+              placeholder="Gender"
+              value={editingChild.gender || ''}
+              onChange={(e) => handleInputChange('gender', e.target.value)}
+            />
+            <label>Date of Birth:</label>
+            <input
+              type="date"
+              className={isFieldEdited('dob') ? 'field-edited' : 'field-unchanged'}
+              value={editingChild.dob?.slice(0, 10) || ''}
+              onChange={(e) => handleInputChange('dob', e.target.value)}
+            />
+            <label>Set Location:</label>
+            <select
+              className={isFieldEdited('setlocation') ? 'field-edited' : 'field-unchanged'}
+              value={editingChild.setlocation || ''}
+              onChange={(e) => handleInputChange('setlocation', parseInt(e.target.value))}
+            >
+              <option value="" disabled>-- Select --</option>
+              {locations.filter(l => l.id !== 0).map(loc => (
+                <option key={loc.id} value={loc.id}>{loc.name}</option>
+              ))}
+            </select>
+
+            <div className="form-buttons">
+              <button className="submit-btn" onClick={handleSubmit}>✔ Save</button>
+              {editingChild.id && (
+                <button className="delete-btn" onClick={handleDelete}>🗑 Delete</button>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

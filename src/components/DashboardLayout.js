@@ -33,17 +33,14 @@ const DashboardLayout = () => {
                 <button className="dropdown-item" onClick={() => navigate('/planner')}>
                   Planner
                 </button>
+                <button className="dropdown-item" onClick={() => navigate('/program/session-management')}>
+                    Session Management
+                </button>
                 <button className="dropdown-item" onClick={() => navigate('/program/children')}>
                   Children
                 </button>
                 <button className="dropdown-item" onClick={() => navigate('/program/questions')}>
                     Questions
-                </button>
-                <button className="dropdown-item" onClick={() => navigate('/program/session-management')}>
-                    Session Management
-                </button>
-                <button className="dropdown-item" onClick={() => navigate('/program/edit-child')}>
-                    Create/Edit Children
                 </button>
                 <button
                 className="dropdown-item logout-btn"
@@ -61,18 +58,21 @@ const DashboardLayout = () => {
               </button>
               {isAdminDropdownOpen && (
                 <div className="dropdown-content">
+                  <button className="dropdown-item" onClick={() => navigate('/admin/visualizations')}>
+                    Visualizations
+                  </button>
                   <button className="dropdown-item" onClick={() => navigate('/admin/users')}>
-                    User Management
+                    Edit Users
                   </button>
                   <button className="dropdown-item" onClick={() => navigate('/program/edit-questions')}>
                     Edit Questions
                   </button>
-                  <button 
-      className="dropdown-item"
-      onClick={() => navigate('/admin/visualizations')}
-    >
-      Visualizations
-    </button>
+                  <button className="dropdown-item" onClick={() => navigate('/admin/locations')}>
+                    Edit Locations
+                  </button>
+                  <button className="dropdown-item" onClick={() => navigate('/admin/categories')}>
+                    Edit Categories
+                  </button>
                 </div>
               )}
             </div>

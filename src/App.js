@@ -10,10 +10,10 @@ import ChildrenTablePage from './components/ChildrenTablePage';
 import QuestionTablePage from './components/QuestionTablePage';
 import CreateSessionPage from './components/CreateSessionPage';
 import SessionAnswersPage from './components/SessionAnswersPage';
-import EditChild from './components/EditChild';
 import EditQuestion from './components/EditQuestion'; 
 import VisualizationsPage from './components/VisualizationsPage';
-
+import EditLocations from './components/EditLocations';
+import EditCategories from './components/EditCategories';
 
 
 
@@ -31,9 +31,10 @@ function App() {
             <Route path="/program/questions" element={<QuestionTablePage />} />
             <Route path="/program/session-management" element={<CreateSessionPage />} />
             <Route path="/session-answers" element={<SessionAnswersPage />} />
-            <Route path="/program/edit-child" element={<EditChild />} />
             <Route path="/program/edit-questions" element={<EditQuestion />} />
             <Route path="/admin/visualizations" element={<VisualizationsPage />} />
+            <Route path="/admin/locations" element={<EditLocations />} />
+            <Route path="/admin/categories" element={<EditCategories />} />
           </Route>
         </Routes>
       </div>
